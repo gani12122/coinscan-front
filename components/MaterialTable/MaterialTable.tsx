@@ -32,6 +32,7 @@ type MaterialTableProps<TData> = {
   columns: ColumnDef<TData, any>[];
   data?: TData[];
   query?: DocumentNode;
+  queryProcessResultsFn?: (data: any) => { [key: string]: TData[] };
   variables?: OperationVariables;
   globalFilterFn?: FilterFn<TData>;
   globalFilterField?: string;
@@ -51,6 +52,7 @@ const MaterialTable = <TData extends unknown>({
   columns,
   data,
   query,
+  queryProcessResultsFn,
   variables,
   globalFilterFn,
   globalFilterSearchLabel,
@@ -113,9 +115,13 @@ const MaterialTable = <TData extends unknown>({
       fetchPolicy: 'network-only',
     });
 
+    const processedData = queryProcessResultsFn
+      ? queryProcessResultsFn(data)
+      : data;
+
     setState((prevState) => ({
       ...prevState,
-      data: data[Object.keys(data)[0]],
+      data: processedData[Object.keys(processedData)[0]],
       loading: false,
     }));
   }, [
@@ -125,6 +131,7 @@ const MaterialTable = <TData extends unknown>({
     queryParams,
     routerGlobalFilter,
     variables,
+    queryProcessResultsFn,
   ]);
 
   // initial query if query is defined and not data passed
